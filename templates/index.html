@@ -1,40 +1,43 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja-JP">
 <head>
-    <title>音声合成</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastAPI TTS</title>
 </head>
 <body>
-    <h1>テキストから音声合成</h1>
-    <form action="/synthesize/" method="post">
+    <h1>Hello, FastAPI!</h1>
+
+    <form id="ttsForm">
         <label for="text">テキスト:</label>
-        <input type="text" id="text" name="text" required>
-        <button type="submit">合成</button>
+        <input type="text" id="text" name="text" required aria-label="テキスト入力">
+        <button type="button" onclick="synthesizeText()">再生</button>
     </form>
 
-    <!-- 音声再生用エリア -->
-    <audio id="audio-player" controls style="margin-top: 20px;"></audio>
+    <audio id="audioPlayer" controls></audio>
 
     <script>
-        // フォーム送信時に音声を再生
-        document.querySelector("form").addEventListener("submit", async (e) => {
-            e.preventDefault();
-
-            const formData = new FormData(e.target);
-            const response = await fetch("/synthesize/", {
-                method: "POST",
-                body: formData,
+        async function synthesizeText() {
+            const text = document.getElementById("text").value;
+            const response = await fetch('/synthesize/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `text=${encodeURIComponent(text)}`,
             });
 
             if (response.ok) {
                 const audioBlob = await response.blob();
                 const audioUrl = URL.createObjectURL(audioBlob);
-                const audioPlayer = document.getElementById("audio-player");
+                const audioPlayer = document.getElementById("audioPlayer");
                 audioPlayer.src = audioUrl;
                 audioPlayer.play();
             } else {
-                alert("音声合成に失敗しました");
+                console.error('Failed to synthesize text:', response.status, response.statusText);
+                alert('テキストの合成に失敗しました。もう一度お試しください。');
             }
-        });
+        }
     </script>
 </body>
 </html>
