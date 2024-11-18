@@ -1,43 +1,40 @@
 <!DOCTYPE html>
-<html lang="ja-JP">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FastAPI TTS</title>
+    <title>音声合成</title>
 </head>
 <body>
-    <h1>Hello, FastAPI!</h1>
-
-    <form id="ttsForm">
+    <h1>テキストから音声合成</h1>
+    <form action="/synthesize/" method="post">
         <label for="text">テキスト:</label>
-        <input type="text" id="text" name="text" required aria-label="テキスト入力">
-        <button type="button" onclick="synthesizeText()">再生</button>
+        <input type="text" id="text" name="text" required>
+        <button type="submit">合成</button>
     </form>
 
-    <audio id="audioPlayer" controls></audio>
+    <!-- 音声再生用エリア -->
+    <audio id="audio-player" controls style="margin-top: 20px;"></audio>
 
     <script>
-        async function synthesizeText() {
-            const text = document.getElementById("text").value;
-            const response = await fetch('/synthesize/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `text=${encodeURIComponent(text)}`,
+        // フォーム送信時に音声を再生
+        document.querySelector("form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(e.target);
+            const response = await fetch("/synthesize/", {
+                method: "POST",
+                body: formData,
             });
 
             if (response.ok) {
                 const audioBlob = await response.blob();
                 const audioUrl = URL.createObjectURL(audioBlob);
-                const audioPlayer = document.getElementById("audioPlayer");
+                const audioPlayer = document.getElementById("audio-player");
                 audioPlayer.src = audioUrl;
                 audioPlayer.play();
             } else {
-                console.error('Failed to synthesize text:', response.status, response.statusText);
-                alert('テキストの合成に失敗しました。もう一度お試しください。');
+                alert("音声合成に失敗しました");
             }
-        }
+        });
     </script>
 </body>
 </html>
