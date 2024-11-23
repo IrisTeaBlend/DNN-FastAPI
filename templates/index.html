@@ -18,29 +18,37 @@
 
     <script>
         async function synthesizeText() {
-    const text = document.getElementById("text").value;
+            const text = document.getElementById("text").value;
 
-    // URLを動的に決定（ローカルの場合は空文字、デプロイではリモートURL）
-    const baseUrl = window.location.origin.includes("localhost")
-        ? ""
-        : "https://dnn-fastapi.onrender.com";
+            // ローカル環境とデプロイ環境でURLを切り替え
+            const baseUrl = window.location.origin.includes("localhost") || window.location.origin.includes("127.0.0.1")
+                ? "http://127.0.0.1:8000"  // ローカルURL
+                : "https://dnn-fastapi.onrender.com";  // デプロイURL
 
-    const response = await fetch(`${baseUrl}/synthesize/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: `text=${encodeURIComponent(text)}`,
-    });
+            try {
+                const response = await fetch(`${baseUrl}/synthesize/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `text=${encodeURIComponent(text)}`,
+                });
 
-    if (response.ok) {
-        const audioBlob = await response.blob();
-        const audioUrl = URL.createObjectURL(audioBlob);
-        const audioPlayer = document.getElementById("audioPlayer");
-        audioPlayer.src = audioUrl;
-        audioPlayer.play();
-    } else {
-        console.error('Failed to synthesize text:', response.status, response.statusText);
-        alert('テキストの合成に失敗しました。もう一度お試しください。');
-    }
-}
+                if (response.ok) {
+                    const audioBlob = await response.blob();
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    const audioPlayer = document.getElementById("audioPlayer");
+                    audioPlayer.src = audioUrl;
+                    audioPlayer.play();
+                } else {
+                    console.error('Failed to synthesize text:', response.status, response.statusText);
+                    alert('テキストの合成に失敗しました。もう一度お試しください。');
+                }
+            } catch (error) {
+                console.error('Error occurred:', error);
+                alert('エラーが発生しました。サーバー設定を確認してください。');
+            }
+        }
+    </script>
+</body>
+</html>
